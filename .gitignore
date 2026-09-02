@@ -1,0 +1,23 @@
+# Ambiente virtual
+venv/
+__pycache__/
+*.pyc
+
+# Credenciais - NUNCA subir isto para o GitHub
+.env
+src/scraper/.env
+
+# Notebooks - checkpoints do Jupyter
+.ipynb_checkpoints/
+
+# Dados brutos intermedios (grandes, reproduziveis a partir do scraper)
+# Mantemos os ficheiros FINAIS (matches_clean, features_dataset, modelos,
+# previsoes_log) porque sao precisos para o dashboard e o GitHub Action
+# funcionarem sem teres de correr o scraping todo de novo.
+data/mapas_raw.csv
+data/resultados_raw.csv
+data/jogadores_por_match.csv
+
+# Sistema
+.DS_Store
+Thumbs.db
