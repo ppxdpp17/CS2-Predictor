@@ -103,6 +103,15 @@ def _buscar_resultados_recentes(max_paginas: int = 2) -> dict:
 
 def verificar_resultados(max_paginas: int = 2) -> int:
     log = carregar_log()
+
+    # Forcar estas colunas a aceitar texto (object), porque se o CSV
+    # so tinha valores vazios ate agora, o pandas assume erradamente
+    # que sao colunas numericas (float64), e recusa-se a aceitar
+    # strings (nomes de equipas) mais tarde.
+    log["resultado_real"] = log["resultado_real"].astype(object)
+    for _m in NOMES_MODELOS:
+        log[f"acertou_{_m}"] = log[f"acertou_{_m}"].astype(object)
+
     pendentes = log[log["resultado_real"].isna()]
 
     if len(pendentes) == 0:
