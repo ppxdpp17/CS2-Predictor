@@ -16,7 +16,6 @@ src/scraper/.env
 # funcionarem sem teres de correr o scraping todo de novo.
 data/mapas_raw.csv
 data/resultados_raw.csv
-data/jogadores_por_match.csv
 
 # Sistema
 .DS_Store
