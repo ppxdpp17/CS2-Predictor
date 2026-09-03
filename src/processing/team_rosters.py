@@ -14,7 +14,16 @@ _CAMINHO_JOGADORES = os.path.join(_BASE_DIR, "..", "..", "data", "jogadores_por_
 
 
 def obter_ultimo_lineup_por_equipa() -> dict:
-    """Devolve {team_id: [nome_jogador1, ..., nome_jogador5]}."""
+    """Devolve {team_id: [nome_jogador1, ..., nome_jogador5]}.
+
+    Se o ficheiro de jogadores nao existir (ex: ambiente onde ainda
+    nao foi enviado), devolve um dicionario vazio em vez de rebentar -
+    o dashboard continua a funcionar, so sem os tooltips de lineup.
+    """
+    if not os.path.exists(_CAMINHO_JOGADORES) or not os.path.exists(_CAMINHO_MATCHES):
+        print(f"AVISO: ficheiro de jogadores/matches nao encontrado. Tooltips ficarao vazios.")
+        return {}
+
     df_matches = pd.read_csv(_CAMINHO_MATCHES)
     df_matches["data"] = pd.to_datetime(df_matches["data"])
     df_matches = df_matches.sort_values("data")
