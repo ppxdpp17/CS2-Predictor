@@ -32,8 +32,17 @@ def obter_jogos_futuros() -> pd.DataFrame:
         event_id = bloco.get("data-event-id")
         ao_vivo = bloco.get("live") == "true"
 
-        team1_div = bloco.find("div", class_="team1")
-        team2_div = bloco.find("div", class_="team2")
+        # Nota: jogos AO VIVO usam <div class="match-team"> (sem sufixo),
+        # enquanto jogos futuros/agendados usam <div class="match-team team1">
+        # / "team2". Por isso, em vez de procurar por essas classes
+        # especificas, usamos a ORDEM dos blocos "match-team" dentro do
+        # container "match-teams" - a primeira e sempre team1, a segunda
+        # e sempre team2, em ambos os casos.
+        teams_container = bloco.find("a", class_="match-teams") or bloco.find("div", class_="match-teams")
+        team_divs = teams_container.find_all("div", class_="match-team") if teams_container else []
+
+        team1_div = team_divs[0] if len(team_divs) > 0 else None
+        team2_div = team_divs[1] if len(team_divs) > 1 else None
 
         nome_tag_1 = team1_div.find("div", class_="match-teamname") if team1_div else None
         nome_tag_2 = team2_div.find("div", class_="match-teamname") if team2_div else None
