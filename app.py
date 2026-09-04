@@ -151,6 +151,35 @@ log = track_predictions.carregar_log()
 df_passados = log[log["resultado_real"].notna()].sort_values("data_hora_jogo", ascending=False)
 
 
+def _placar_previsto(prob1, formato):
+    """Converte uma probabilidade num placar previsto tipo '2-1'.
+    Heuristica simples: quanto mais desequilibrada a probabilidade,
+    mais "confortavel" se assume a vitoria (2-0 em vez de 2-1)."""
+    formato_str = str(formato).lower()
+    max_mapas = 3 if "bo3" in formato_str else (5 if "bo5" in formato_str else 1)
+    vencedor_e_team1 = prob1 >= 0.5
+    prob_favorito = prob1 if vencedor_e_team1 else (1 - prob1)
+
+    if max_mapas == 1:
+        placar = "1-0"
+    elif max_mapas == 3:
+        placar = "2-0" if prob_favorito >= 0.62 else "2-1"
+    else:  # bo5
+        if prob_favorito >= 0.70:
+            placar = "3-0"
+        elif prob_favorito >= 0.55:
+            placar = "3-1"
+        else:
+            placar = "3-2"
+
+    if vencedor_e_team1:
+        return placar
+    else:
+        # inverter o placar para refletir que quem ganha e a team2
+        a, b = placar.split("-")
+        return f"{b}-{a}"
+
+
 def _tooltip_jogadores(nome_equipa, jogadores):
     if isinstance(jogadores, str):
         jogadores = []
@@ -173,20 +202,26 @@ def mostrar_cartao_jogo(jogo):
     partes_html.append('</div>')
 
     for chave, info in MODELOS_INFO.items():
-        prob1_pct = round(jogo[f"prob1_{chave}"] * 100, 1)
-        partes_html.append(f'<div class="modelo-label">{info["nome"]}</div>')
+        prob1 = jogo[f"prob1_{chave}"]
+        prob1_pct = round(prob1 * 100, 1)
+        placar = _placar_previsto(prob1, jogo["formato"])
+        equipa_favorita = jogo["team1_nome"] if prob1 >= 0.5 else jogo["team2_nome"]
+
+        partes_html.append(f'<div class="modelo-label">{info["nome"]} — previsto: <strong>{placar}</strong> ({equipa_favorita})</div>')
         partes_html.append(f'<div class="prob-bar-container"><div class="prob-bar-fill" style="width:{prob1_pct}%;"></div><div class="prob-bar-marker" style="left:{prob1_pct}%;"></div></div>')
         partes_html.append(f'<div class="prob-labels"><span>{jogo[f"prob1_{chave}"]:.1%}</span><span>{jogo[f"prob2_{chave}"]:.1%}</span></div>')
 
     previsoes_mapa = jogo.get("previsoes_mapa", [])
     if isinstance(previsoes_mapa, list) and len(previsoes_mapa) > 0:
         partes_html.append('<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #3a3760;">')
-        partes_html.append('<div style="font-size:12px; color:#9d9ac2; margin-bottom:6px;">Estimativa por mapa (baseada em winrate historico - nao e o modelo principal)</div>')
+        partes_html.append('<div style="font-size:12px; color:#9d9ac2; margin-bottom:8px;">Previsoes por mapa (extrapolacao: avaliacao geral de cada modelo ajustada por winrate historico nesse mapa - nao e um modelo treinado ao nivel de mapa)</div>')
         for previsao in previsoes_mapa:
-            prob1_pct = round(previsao["prob_team1"] * 100, 1)
-            partes_html.append(f'<div class="modelo-label">{previsao["mapa"]}</div>')
-            partes_html.append(f'<div class="prob-bar-container" style="height:14px;"><div class="prob-bar-fill" style="width:{prob1_pct}%;"></div><div class="prob-bar-marker" style="left:{prob1_pct}%;"></div></div>')
-            partes_html.append(f'<div class="prob-labels"><span>{previsao["prob_team1"]:.1%}</span><span>{previsao["prob_team2"]:.1%}</span></div>')
+            partes_html.append(f'<div style="font-weight:700; font-size:14px; margin-top:6px;">{previsao["mapa"]}</div>')
+            for chave, info in MODELOS_INFO.items():
+                prob_mapa = previsao["previsoes_por_modelo"][chave]
+                vencedor_mapa = jogo["team1_nome"] if prob_mapa >= 0.5 else jogo["team2_nome"]
+                prob_pct = round(prob_mapa * 100, 1)
+                partes_html.append(f'<div style="display:flex; justify-content:space-between; font-size:13px; color:#cfcfe8; padding:2px 0;"><span>{info["nome"]}: {vencedor_mapa}</span><span>{max(prob_mapa, 1-prob_mapa):.1%}</span></div>')
         partes_html.append('</div>')
 
     partes_html.append('</div>')

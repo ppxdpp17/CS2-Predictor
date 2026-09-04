@@ -8,6 +8,7 @@ usando 3 modelos em simultaneo:
 
 import os
 import sys
+import math
 
 import joblib
 import pandas as pd
@@ -22,6 +23,15 @@ from build_features import processar_estado_completo, calcular_probabilidade_elo
 from get_upcoming_matches import obter_jogos_futuros
 from team_rosters import obter_ultimo_lineup_por_equipa
 from fetcher import fetch_page
+
+def _sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+
+def _log_odds(p):
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return math.log(p / (1 - p))
+
 
 _CAMINHO_MATCHES = os.path.join(_BASE_DIR, "..", "..", "data", "matches_clean.csv")
 _CAMINHO_MODELO_LR = os.path.join(_BASE_DIR, "..", "..", "data", "modelo_producao.pkl")
@@ -136,7 +146,17 @@ def gerar_previsoes() -> pd.DataFrame:
         X_xgb = pd.DataFrame([linha_features])[colunas_xgb]
         prob1_modelo3 = modelo_xgb.predict_proba(X_xgb)[0, 1]
 
-        # --- Previsoes heuristicas por mapa (so se ja houver mapas revelados) ---
+        # --- Previsoes por mapa, UMA POR MODELO ---
+        # IMPORTANTE (documentado tambem em docs/METODOLOGIA.md): nenhum
+        # dos 3 modelos foi treinado com dados de mapa (removido de
+        # proposito, por nao estar disponivel antes do veto). Os valores
+        # abaixo sao uma EXTRAPOLACAO: combinamos a avaliacao geral de
+        # cada modelo sobre o encontro com um heuristico de winrate
+        # historico nesse mapa especifico, usando uma media em "log-odds"
+        # (forma matematicamente correta de combinar duas probabilidades,
+        # ao contrario de uma media simples). Isto NAO e um modelo
+        # treinado ao nivel de mapa - e uma aproximacao para dar mais
+        # contexto quando os mapas ja sao conhecidos.
         previsoes_mapa = []
         mapas_revelados = jogo.get("mapas_revelados", [])
         for mapa in mapas_revelados:
@@ -147,11 +167,20 @@ def gerar_previsoes() -> pd.DataFrame:
             winrate_b_mapa = (mapa_vitorias_hist[(id_b, mapa)] / jogos_b_mapa
                               if jogos_b_mapa > 0 else 0.5)
             soma = winrate_a_mapa + winrate_b_mapa
-            prob_a_mapa = winrate_a_mapa / soma if soma > 0 else 0.5
+            prob_mapa_heuristico = winrate_a_mapa / soma if soma > 0 else 0.5
+
+            previsoes_por_modelo = {}
+            for chave_m, prob_base in [
+                ("modelo1", prob1_modelo1),
+                ("modelo2", prob1_modelo2),
+                ("modelo3", prob1_modelo3),
+            ]:
+                combinado = 0.6 * _log_odds(prob_base) + 0.4 * _log_odds(prob_mapa_heuristico)
+                previsoes_por_modelo[chave_m] = _sigmoid(combinado)
+
             previsoes_mapa.append({
                 "mapa": mapa,
-                "prob_team1": prob_a_mapa,
-                "prob_team2": 1 - prob_a_mapa,
+                "previsoes_por_modelo": previsoes_por_modelo,
                 "jogos_historico_team1": jogos_a_mapa,
                 "jogos_historico_team2": jogos_b_mapa,
             })
