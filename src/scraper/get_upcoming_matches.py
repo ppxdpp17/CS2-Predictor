@@ -53,7 +53,11 @@ def obter_jogos_futuros() -> pd.DataFrame:
         time_div = bloco.find("div", class_="match-time")
         timestamp_unix = time_div.get("data-unix") if time_div else None
 
-        meta_div = bloco.find("div", class_="match-meta")
+        # Jogos ao vivo tem DUAS divs "match-meta": uma com o estado
+        # ("Live") e outra com o formato ("bo3"). Usamos um seletor que
+        # exclui explicitamente a classe "match-meta-live", para
+        # garantirmos que apanhamos sempre o formato, nao o estado.
+        meta_div = bloco.select_one("div.match-meta:not(.match-meta-live)")
         formato = meta_div.get_text(strip=True) if meta_div else None
 
         # Mapas ja revelados pelo veto (so existe perto/durante o jogo)
@@ -74,6 +78,7 @@ def obter_jogos_futuros() -> pd.DataFrame:
             "event_id": event_id,
             "formato": formato,
             "ao_vivo": ao_vivo,
+            "mapas_revelados": mapas_revelados,
         })
 
     df = pd.DataFrame(jogos)

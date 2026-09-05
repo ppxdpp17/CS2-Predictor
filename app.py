@@ -101,7 +101,7 @@ with st.sidebar:
     if st.button("🔄 Atualizar agora", use_container_width=True):
         st.cache_data.clear()
 
-    auto_refresh = st.checkbox("Atualizacao automatica (a cada 5 min)", value=False)
+    auto_refresh = st.checkbox("Atualizacao automatica (a cada 5 min)", value=True)
     if auto_refresh:
         from streamlit_autorefresh import st_autorefresh
         st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh_timer")
@@ -266,7 +266,9 @@ with aba_passados:
             f'{MODELOS_INFO[m]["nome"]}: {"✅" if linha[f"acertou_{m}"] else "❌"}'
             for m in MODELOS_INFO
         )
-        data_fmt = pd.Timestamp(linha["data_hora_jogo"]).strftime("%d/%m/%Y %H:%M")
+        timestamp_jogo = pd.Timestamp(linha["data_hora_jogo"])
+        data_fmt = timestamp_jogo.strftime("%d/%m/%Y %H:%M") if pd.notna(timestamp_jogo) else "Hora desconhecida (era jogo ao vivo)"
+
         html_passado = (
             f'<div class="match-card">'
             f'<div class="match-meta">{data_fmt}</div>'
