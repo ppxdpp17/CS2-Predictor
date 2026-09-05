@@ -2,11 +2,11 @@ name: Atualizar previsoes CS2
 
 on:
   schedule:
-    # Corre a cada hora, aos minutos 0. Sintaxe cron: minuto hora dia mes dia-semana
+    #Corre a cada hora, aos minutos 0. Sintaxe cron: minuto hora dia mes dia-semana
     - cron: "0 * * * *"
   workflow_dispatch:
-    # Permite correr manualmente a partir do separador "Actions" no GitHub,
-    # util para testar sem esperar pela proxima hora agendada.
+    #Permite correr manualmente a partir do separador "Actions" no GitHub,
+    #Útil para testar sem esperar pela proxima hora agendada.
 
 jobs:
   atualizar:

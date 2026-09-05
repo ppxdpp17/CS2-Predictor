@@ -1,13 +1,12 @@
 # Metodologia
 
 Este documento explica as principais decisões de design do projeto,
-incluindo experimentos que não deram resultado (documentados por
-transparência, não escondidos).
+incluindo testes que não tiveram resultados positivos (documentados por transparência).
 
 ## 1. Recolha de dados
 
 Dados recolhidos de `hltv.org/stats/matches`, filtrados para equipas
-Top 30 do ranking HLTV, formato CS2, desde 04/10/2023. Ultrapassar a
+Top 30 do ranking HLTV, apenas no CS2, desde 04/10/2023. Ultrapassar a
 proteção Cloudflare exigiu autenticação via cookie `cf_clearance`
 obtido manualmente (ver `docs/RENOVAR_COOKIE.md`).
 
@@ -22,7 +21,7 @@ obtido manualmente (ver `docs/RENOVAR_COOKIE.md`).
 ## 2. Prevenção de data leakage
 
 Regra seguida em todo o pipeline: para prever o jogo do dia D, só se
-usa informação disponível **antes** de D. Isto implica:
+utiliza informação disponível **antes** de D. Isto implica:
 
 - Processamento estritamente cronológico na construção de features
   (Elo, forma recente, head-to-head)
