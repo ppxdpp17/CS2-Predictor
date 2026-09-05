@@ -21,7 +21,7 @@ sys.path.append(os.path.join(_BASE_DIR, "..", "scraper"))
 
 from build_features import processar_estado_completo, calcular_probabilidade_elo, calcular_winrate_por_mapa
 from get_upcoming_matches import obter_jogos_futuros
-from team_rosters import obter_ultimo_lineup_por_equipa
+from team_rosters import obter_lineups_para_equipas, obter_lineup_confirmado_do_jogo
 from fetcher import fetch_page
 
 def _sigmoid(x):
@@ -70,7 +70,6 @@ def gerar_previsoes() -> pd.DataFrame:
         .to_dict()
     )
 
-    ultimo_lineup = obter_ultimo_lineup_por_equipa()
     winrate_mapa_estado = calcular_winrate_por_mapa(_CAMINHO_MATCHES)
     mapa_vitorias_hist = winrate_mapa_estado["vitorias"]
     mapa_jogos_hist = winrate_mapa_estado["jogos"]
@@ -93,6 +92,9 @@ def gerar_previsoes() -> pd.DataFrame:
     if len(df_futuros) == 0:
         print("Nenhum jogo futuro entre equipas conhecidas no momento.")
         return pd.DataFrame()
+
+    equipas_para_mostrar = set(df_futuros["team1_id"]) | set(df_futuros["team2_id"])
+    lineup_fallback = obter_lineups_para_equipas(equipas_para_mostrar)
 
     pacote_lr = joblib.load(_CAMINHO_MODELO_LR)
     modelo_lr = pacote_lr["modelo"]
@@ -185,6 +187,13 @@ def gerar_previsoes() -> pd.DataFrame:
                 "jogos_historico_team2": jogos_b_mapa,
             })
 
+        # Tenta primeiro o lineup confirmado especificamente para este
+        # jogo (inclui stand-ins); se nao existir ainda, usa o roster
+        # generico da equipa como aproximacao.
+        lineup_confirmado = obter_lineup_confirmado_do_jogo(jogo["match_id"])
+        jogadores_team1 = lineup_confirmado.get("1") or lineup_fallback.get(id_a, [])
+        jogadores_team2 = lineup_confirmado.get("2") or lineup_fallback.get(id_b, [])
+
         event_id_str = str(jogo["event_id"])
         nome_evento = mapa_eventos.get(float(jogo["event_id"]) if jogo["event_id"] else None)
         if nome_evento is None:
@@ -204,8 +213,8 @@ def gerar_previsoes() -> pd.DataFrame:
             "prob1_modelo1": prob1_modelo1, "prob2_modelo1": 1 - prob1_modelo1,
             "prob1_modelo2": prob1_modelo2, "prob2_modelo2": 1 - prob1_modelo2,
             "prob1_modelo3": prob1_modelo3, "prob2_modelo3": 1 - prob1_modelo3,
-            "team1_jogadores": ultimo_lineup.get(id_a, []),
-            "team2_jogadores": ultimo_lineup.get(id_b, []),
+            "team1_jogadores": jogadores_team1,
+            "team2_jogadores": jogadores_team2,
             "evento_id": jogo["event_id"],
             "evento_nome": nome_evento,
             "previsoes_mapa": previsoes_mapa,
