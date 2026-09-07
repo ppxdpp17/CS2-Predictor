@@ -18,7 +18,12 @@ import random
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()  # le o ficheiro .env e disponibiliza as variaveis
+# Apontamos explicitamente para o .env na pasta deste ficheiro
+# (src/scraper/), em vez de deixar o load_dotenv() adivinhar - isso
+# evita falhas quando o script e corrido a partir de outra pasta
+# (ex: src/processing, ou a raiz do projeto via streamlit).
+_CAMINHO_ENV = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(dotenv_path=_CAMINHO_ENV)
 
 
 class CookieExpiradoError(Exception):

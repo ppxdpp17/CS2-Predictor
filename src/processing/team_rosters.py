@@ -57,6 +57,10 @@ def _buscar_roster_na_hltv(team_id) -> list:
     return jogadores
 
 
+_CAMINHO_CACHE_LINEUPS_MATCH = os.path.join(_BASE_DIR, "..", "..", "data", "lineups_match_cache.json")
+MINUTOS_VALIDADE_CACHE_MATCH = 60
+
+
 def obter_lineup_confirmado_do_jogo(match_id) -> dict:
     """
     Vai buscar o lineup CONFIRMADO especificamente para este encontro,
@@ -67,11 +71,26 @@ def obter_lineup_confirmado_do_jogo(match_id) -> dict:
     correspondem a team1/team2, tal como na pagina de listagem de jogos.
     Devolve {} se a pagina nao tiver esta secao ainda (jogo muito
     distante no tempo, lineup por confirmar).
+
+    Usa cache de 1 hora por match_id, para nao bombardear a HLTV com
+    um pedido por jogo de cada vez que o dashboard atualiza.
     """
+    match_id_str = str(int(match_id))
+    cache = {}
+    if os.path.exists(_CAMINHO_CACHE_LINEUPS_MATCH):
+        with open(_CAMINHO_CACHE_LINEUPS_MATCH, "r", encoding="utf-8") as f:
+            cache = json.load(f)
+
+    entrada = cache.get(match_id_str)
+    if entrada is not None:
+        atualizado_em = datetime.fromisoformat(entrada["atualizado_em"])
+        if datetime.now() - atualizado_em < timedelta(minutes=MINUTOS_VALIDADE_CACHE_MATCH):
+            return entrada["lineups"]
+
     url = f"https://www.hltv.org/matches/{int(match_id)}/x"
     html = fetch_page(url)
     if html is None:
-        return {}
+        return entrada["lineups"] if entrada else {}
 
     soup = BeautifulSoup(html, "html.parser")
     blocos_players = soup.find_all("div", class_="players")
@@ -87,6 +106,13 @@ def obter_lineup_confirmado_do_jogo(match_id) -> dict:
 
         for ordinal, nomes in nomes_ordinal.items():
             resultado[ordinal] = nomes
+
+    cache[match_id_str] = {
+        "lineups": resultado,
+        "atualizado_em": datetime.now().isoformat(),
+    }
+    with open(_CAMINHO_CACHE_LINEUPS_MATCH, "w", encoding="utf-8") as f:
+        json.dump(cache, f, indent=2, ensure_ascii=False)
 
     return resultado
 

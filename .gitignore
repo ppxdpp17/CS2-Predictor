@@ -17,6 +17,7 @@ src/scraper/.env
 data/mapas_raw.csv
 data/resultados_raw.csv
 data/rosters_cache.json
+data/lineups_match_cache.json
 
 # Sistema
 .DS_Store

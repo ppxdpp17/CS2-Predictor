@@ -22,7 +22,7 @@ sys.path.append(os.path.join(_BASE_DIR, "..", "scraper"))
 from build_features import processar_estado_completo, calcular_probabilidade_elo, calcular_winrate_por_mapa
 from get_upcoming_matches import obter_jogos_futuros
 from team_rosters import obter_lineups_para_equipas, obter_lineup_confirmado_do_jogo
-from fetcher import fetch_page
+from fetcher import fetch_page, gentle_pause
 
 def _sigmoid(x):
     return 1 / (1 + math.exp(-x))
@@ -193,6 +193,7 @@ def gerar_previsoes() -> pd.DataFrame:
         lineup_confirmado = obter_lineup_confirmado_do_jogo(jogo["match_id"])
         jogadores_team1 = lineup_confirmado.get("1") or lineup_fallback.get(id_a, [])
         jogadores_team2 = lineup_confirmado.get("2") or lineup_fallback.get(id_b, [])
+        gentle_pause(1.0, 2.5)  # pequena pausa entre pedidos, para nao levar 429
 
         event_id_str = str(jogo["event_id"])
         nome_evento = mapa_eventos.get(float(jogo["event_id"]) if jogo["event_id"] else None)
