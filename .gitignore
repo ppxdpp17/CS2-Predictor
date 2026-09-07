@@ -14,11 +14,9 @@ src/scraper/.env
 # Mantemos os ficheiros FINAIS (matches_clean, features_dataset, modelos,
 # previsoes_log) porque sao precisos para o dashboard e o GitHub Action
 # funcionarem sem teres de correr o scraping todo de novo.
-data/mapas_raw.csv
 data/resultados_raw.csv
 data/rosters_cache.json
 data/lineups_match_cache.json
-data/mapas_raw.csv
 
 # Sistema
 .DS_Store
