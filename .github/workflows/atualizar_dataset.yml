@@ -1,0 +1,41 @@
+name: Atualizar dataset historico CS2
+
+on:
+  schedule:
+    # Corre uma vez por dia, as 03:00 UTC (fora de horas de pico)
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  atualizar_dataset:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Atualizar dataset e re-treinar modelos
+        env:
+          CF_CLEARANCE: ${{ secrets.CF_CLEARANCE }}
+          USER_AGENT: ${{ secrets.USER_AGENT }}
+        run: python scripts/atualizar_dataset_historico.py
+
+      - name: Guardar alteracoes no repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/mapas_raw.csv data/matches_clean.csv data/features_dataset.csv data/modelo_producao.pkl data/modelo_producao_xgb.pkl
+          git diff --staged --quiet || git commit -m "Atualizacao automatica do dataset historico e re-treino dos modelos [skip ci]"
+          git push
+          

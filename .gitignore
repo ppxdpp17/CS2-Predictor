@@ -18,6 +18,7 @@ data/mapas_raw.csv
 data/resultados_raw.csv
 data/rosters_cache.json
 data/lineups_match_cache.json
+data/mapas_raw.csv
 
 # Sistema
 .DS_Store
