@@ -1,11 +1,10 @@
 """
-Cresce o dataset historico automaticamente: verifica se ha jogos NOVOS
-(tier 1, Top30) desde a ultima recolha, adiciona-os ao mapas_raw.csv,
-reconstroi matches_clean.csv e features_dataset.csv, e re-treina os
-modelos de producao.
+Cresce o dataset histórico automaticamente: verifica se há jogos novos (que não estão atualmente no dataset)
+(tier 1, Top30) desde a última recolha, adiciona-os ao mapas_raw.csv, reconstrói matches_clean.csv e features_dataset.csv, 
+e re-treina os modelos de produção.
 
 Pensado para correr periodicamente via GitHub Actions, sem
-intervencao manual (exceto a renovacao ocasional do cookie).
+intervenção manual (exceto a renovação ocasional do cookie).
 """
 
 import os
@@ -31,14 +30,12 @@ CAMINHO_MAPAS_RAW = os.path.join(_DATA_DIR, "mapas_raw.csv")
 
 def buscar_mapas_novos(por_pagina: int = 50, max_paginas: int = 20) -> int:
     """
-    Percorre as paginas mais recentes de stats/matches (a HLTV lista
-    sempre do mais recente para o mais antigo) e adiciona ao
-    mapas_raw.csv qualquer mapstat_id que ainda nao conhecamos.
+    Percorre as páginas mais recentes de stats/matches e adiciona ao
+    mapas_raw.csv qualquer mapstat_id que ainda nao conheçamos.
 
-    Para assim que uma pagina inteira so tiver mapas ja conhecidos -
-    sinal de que ja apanhamos tudo o que faltava.
+    Pára assim que uma página inteira só tiver mapas já conhecidos.
 
-    Devolve o numero de mapas novos adicionados.
+    Devolve o número de mapas novos adicionados.
     """
     df_existente = pd.read_csv(CAMINHO_MAPAS_RAW)
     ids_conhecidos = set(df_existente["mapstat_id"].astype(str))
@@ -61,7 +58,7 @@ def buscar_mapas_novos(por_pagina: int = 50, max_paginas: int = 20) -> int:
         print(f"  {len(mapas)} mapas na pagina, {len(novos_nesta_pagina)} novos.")
 
         if len(novos_nesta_pagina) == 0:
-            print("  Pagina inteira ja conhecida - apanhamos tudo o que faltava.")
+            print("  Pagina inteira ja conhecida - apanhou tudo o que faltava.")
             break
 
         novos_total.extend(novos_nesta_pagina)
@@ -88,7 +85,7 @@ def main():
         sys.exit(1)
 
     if num_novos == 0:
-        print("Dataset ja estava atualizado - nada a re-treinar.")
+        print("Dataset ja atualizado - nada a re-treinar.")
         return
 
     print("\nA reconstruir matches_clean.csv...")
@@ -103,10 +100,10 @@ def main():
         caminho_saida=os.path.join(_DATA_DIR, "features_dataset.csv"),
     )
 
-    print("\nA re-treinar modelo de producao (Regressao Logistica)...")
+    print("\nA re-treinar modelo 'Regressao Logistica'...")
     treinar_modelo_producao()
 
-    print("\nA re-treinar modelo de producao (XGBoost)...")
+    print("\nA re-treinar modelo 'XGBoost'...")
     treinar_modelo_producao_xgb()
 
     print("\nPipeline de atualizacao concluido com sucesso.")
