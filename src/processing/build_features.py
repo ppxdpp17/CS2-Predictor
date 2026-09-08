@@ -1,26 +1,25 @@
 """
-Constroi as features de nivel-equipa para cada match, respeitando
-SEMPRE a ordem cronologica (para nao ter data leakage):
+Constrói as features de nível-equipa para cada match, respeitando
+sempre a ordem cronológica (para nao ter data leakage):
 - Elo rating de cada equipa, atualizado jogo a jogo
 - Forma recente (winrate nos ultimos N jogos)
-- Head-to-head (historico direto entre as duas equipas)
+- Head-to-head (histórico direto entre as duas equipas)
 - Winrate por mapa
 
-Para cada match no dataset, as features refletem o ESTADO das
-equipas ANTES desse jogo acontecer - nunca informacao do futuro.
+Para cada match no dataset, as features refletem o estado das
+equipas antes desse jogo acontecer - nunca informação do futuro.
 """
 
 from collections import defaultdict, deque
 
 import pandas as pd
 
-# --- Configuracao do Elo ---
 ELO_INICIAL = 1500
-K_FACTOR = 32  # controla o quanto o rating se move a cada jogo
+K_FACTOR = 32 
 
 
 def calcular_probabilidade_elo(rating_a: float, rating_b: float) -> float:
-    """Probabilidade da equipa A ganhar, segundo a formula padrao do Elo."""
+    """Probabilidade da equipa A ganhar, segundo a fórmula padrao do Elo."""
     return 1 / (1 + 10 ** ((rating_b - rating_a) / 400))
 
 
@@ -28,19 +27,19 @@ def processar_estado_completo(caminho_matches: str = "../../data/matches_clean.c
     """
     Percorre TODOS os matches cronologicamente e devolve o ESTADO FINAL
     (elo, forma recente, h2h) de cada equipa, tal como fica depois do
-    ultimo jogo do dataset.
+    último jogo do dataset.
 
-    Esta funcao e partilhada entre:
+    Esta função é partilhada entre:
     - a construcao do dataset de treino (features_dataset.csv)
     - o pipeline de previsao de jogos futuros (que precisa do estado
-      MAIS RECENTE de cada equipa para calcular as features de um
+      mais recente de cada equipa para calcular as features de um
       jogo que ainda vai acontecer)
 
-    Nota: NAO inclui a feature de winrate por mapa, porque essa
-    depende de saber que mapas vao ser jogados - informacao que so
-    existe depois do veto, e por isso nao esta disponivel para prever
+    Este não inclui a feature de winrate por mapa, porque essa
+    depende de saber que mapas vão ser jogados - informação que só
+    existe depois do veto, e por isso não está disponível para prever
     jogos futuros. Foi removida tambem do modelo de treino, para
-    treino e producao usarem exatamente o mesmo conjunto de features.
+    treino e produção usarem exatamente o mesmo conjunto de features.
     """
     df = pd.read_csv(caminho_matches)
     df["data"] = pd.to_datetime(df["data"])
@@ -136,16 +135,16 @@ def construir_features(caminho_matches: str = "../../data/matches_clean.csv",
 
 def calcular_winrate_por_mapa(caminho_matches: str = "../../data/matches_clean.csv") -> dict:
     """
-    Percorre todo o historico e devolve {(team_id, nome_mapa): (vitorias, jogos)}.
+    Percorre todo o histórico e devolve {(team_id, nome_mapa): (vitórias, jogos)}.
 
-    Usado apenas para as previsoes informativas POR MAPA no dashboard
-    (nao faz parte do modelo principal, que nao usa esta informacao
-    por nao estar disponivel antes do veto de mapas).
+    Usado apenas para as previsões informativas por mapa no dashboard
+    (não faz parte do modelo principal, que não usa esta informação
+    por não estar disponível antes do veto de mapas).
 
-    Nota: tal como no calculo original, contamos o mapa como "vitoria"
-    se a equipa ganhou o ENCONTRO em que esse mapa foi jogado, nao
-    necessariamente esse mapa especifico - uma simplificacao valida
-    dado que nao temos sempre o resultado por mapa individual.
+    Tal como no cálculo original, conta-se o mapa como "vitória"
+    se a equipa ganhou o encontro em que esse mapa foi jogado, não
+    necessariamente esse mapa específico - uma simplificação válida
+    dado que não temos sempre o resultado por mapa individual.
     """
     df = pd.read_csv(caminho_matches)
 

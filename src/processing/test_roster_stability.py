@@ -1,11 +1,9 @@
 """
 Testa isoladamente se a "estabilidade de roster" (a equipa jogou com
 o mesmo lineup do jogo anterior dela, ou mudou alguem?) acrescenta
-sinal preditivo, SEM a diluir junto com outras features de jogador
-(como fizemos na experiencia anterior).
+sinal preditivo sem a diluir junto com outras features de jogador.
 
-Reutiliza os dados ja recolhidos (features_jogador.csv) - nao exige
-scraping novo.
+Reutiliza os dados já recolhidos (features_jogador.csv) - não exige scraping novo.
 """
 
 import sys
@@ -25,8 +23,6 @@ def carregar_dados_com_roster_isolado():
     df_equipa = pd.read_csv("../../data/features_dataset.csv")
     df_jogador = pd.read_csv("../../data/features_jogador.csv")
 
-    # So trazemos as colunas de ESTABILIDADE DE ROSTER, ignorando
-    # deliberadamente o rating_medio_lineup (para isolar o efeito).
     colunas_roster = [
         "match_id",
         "roster_estabilidade_a", "roster_estabilidade_b",

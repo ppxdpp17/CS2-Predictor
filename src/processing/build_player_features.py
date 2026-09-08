@@ -1,13 +1,13 @@
 """
-Constroi features ao nivel de JOGADOR/ROSTER para cada match:
-- rating medio historico da lineup (baseado SO em jogos anteriores
+Constrói features ao nível de jogador/roster para cada match:
+- rating médio histórico da lineup (baseado só em jogos anteriores
   de cada jogador, nunca no jogo atual)
 - estabilidade de roster (a equipa jogou com os mesmos jogadores do
-  jogo anterior dela, ou mudou alguem?)
+  jogo anterior dela, ou mudou alguém?)
 
-Segue a mesma regra de ouro de sempre: processamos os matches por
-ordem cronologica, e so atualizamos o "historico" de cada jogador
-DEPOIS de termos calculado as features desse match.
+Segue a mesma regra de sempre: processamos os matches por
+ordem cronológica, e só atualiza o "histórico" de cada jogador
+depois de ter calculado as features dessa match.
 """
 
 from collections import defaultdict

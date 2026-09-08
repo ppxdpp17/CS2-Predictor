@@ -1,8 +1,8 @@
 """
 Junta as features de equipa (elo, forma, h2h, mapa) com as novas
-features de jogador (rating medio da lineup, estabilidade de roster),
-e re-treina a Regressao Logistica para comparar diretamente com o
-resultado anterior (so features de equipa: Log Loss 0.645, Acc 63.2%).
+features de jogador (rating médio da lineup, estabilidade de roster),
+e re-treina a Regressão Logistica para comparar diretamente com o
+resultado anterior (só features de equipa: Log Loss 0.645, Acc 63.2%).
 """
 
 import sys
@@ -14,7 +14,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, log_loss, classification_report
 
-# Permite importar do modulo train_baseline que esta noutra pasta (src/models)
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 from train_baseline import split_temporal
 
@@ -36,8 +35,6 @@ def carregar_dados_combinados(
     df["data"] = pd.to_datetime(df["data"])
     df = df.sort_values("data").reset_index(drop=True)
 
-    # Se algum match nao tiver features de jogador (falha de scraping),
-    # tratamos como valores em falta, com o mesmo principio de sempre.
     colunas_jogador = [c for c in df_jogador.columns if c != "match_id"]
     for col in colunas_jogador:
         if df[col].isnull().any():

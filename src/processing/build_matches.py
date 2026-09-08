@@ -1,11 +1,11 @@
 """
-Reconstroi os ENCONTROS completos (matches) a partir dos dados ao
-nivel de MAPA que recolhemos.
+Reconstrói os encontros completos (matches) a partir dos dados ao
+nível de mapa que recolhemos.
 
-Porque precisamos disto: um Bo3 aparece no nosso CSV como 2 ou 3
+Isto é necessário porque um Bo3 aparece no nosso CSV como 2 ou 3
 linhas separadas (uma por mapa). Para prever "quem ganha o encontro"
 (o objetivo real do projeto), precisamos de juntar essas linhas num
-so registo com o placar final (ex: 2-0, 2-1) e o vencedor geral.
+só registo com o placar final (ex: 2-0, 2-1) e o vencedor geral.
 """
 
 import pandas as pd
@@ -23,11 +23,6 @@ def construir_matches(caminho_entrada: str = "../../data/mapas_raw.csv",
 
     df["par_chave"] = df.apply(chave_par, axis=1)
 
-    # Em vez de agrupar por "mesmo dia" (fragil: pode juntar 2 encontros
-    # diferentes entre as mesmas equipas no mesmo dia, ex: fase de grupos
-    # com double round-robin), agrupamos por PROXIMIDADE TEMPORAL:
-    # mapas do mesmo confronto sao sempre jogados com poucas horas de
-    # diferenca entre si. Se o intervalo for grande, e um encontro novo.
     LIMITE_HORAS = 4
 
     df = df.sort_values(["par_chave", "evento_id", "timestamp_unix"]).reset_index(drop=True)
@@ -41,12 +36,10 @@ def construir_matches(caminho_entrada: str = "../../data/mapas_raw.csv",
         chave_atual = (row["par_chave"], row["evento_id"])
 
         if chave_atual != grupo_anterior:
-            # Mudou de par de equipas/evento -> comeca sempre um novo grupo
             contador_grupo += 1
         elif tempo_anterior is not None:
             diff_horas = (row["timestamp_unix"] - tempo_anterior) / (1000 * 60 * 60)
             if diff_horas > LIMITE_HORAS:
-                # Mesmo par/evento, mas muito tempo depois -> encontro novo
                 contador_grupo += 1
 
         grupos_match.append(contador_grupo)
@@ -58,12 +51,8 @@ def construir_matches(caminho_entrada: str = "../../data/mapas_raw.csv",
     matches = []
 
     for grupo_id, grupo in df.groupby("grupo_match"):
-        # Ordenar os mapas deste confronto pela ordem em que foram jogados
         grupo = grupo.sort_values("timestamp_unix")
 
-        # Usamos a primeira linha para saber quem sao as equipas
-        # (o "team1"/"team2" pode trocar de posicao entre mapas,
-        # por isso fixamos com base nos IDs, nao nos nomes de coluna)
         primeira = grupo.iloc[0]
         id_a = primeira["team1_id"]
         id_b = primeira["team2_id"]
@@ -75,8 +64,6 @@ def construir_matches(caminho_entrada: str = "../../data/mapas_raw.csv",
         mapas_jogados = []
 
         for _, mapa in grupo.iterrows():
-            # Confirmar qual e o vencedor deste mapa em termos de id_a/id_b
-            # (porque team1/team2 podem estar trocados face a primeira linha)
             if mapa["team1_id"] == id_a:
                 score_a, score_b = mapa["team1_score"], mapa["team2_score"]
             else:
@@ -112,14 +99,6 @@ def construir_matches(caminho_entrada: str = "../../data/mapas_raw.csv",
 
     df_matches = pd.DataFrame(matches).sort_values("data").reset_index(drop=True)
 
-    # --- Filtrar casos empatados ---
-    # Um encontro de CS2 nunca termina empatado no scoreboard. Quando
-    # isto acontece nos nossos dados, e sinal de uma decisao arbitral
-    # (ex: mapa anulado por infracao de regras, forfeit) que reverte o
-    # resultado por motivos administrativos, nao refletidos no placar
-    # dos mapas. Estes casos sao raros (~0.15% do dataset) e nao sao
-    # previsiveis a partir de features de jogo, por isso excluimo-los
-    # em vez de tentar adivinhar o vencedor real.
     empatados = df_matches[df_matches["mapas_ganhos_a"] == df_matches["mapas_ganhos_b"]]
     if len(empatados) > 0:
         print(f"\nAVISO: {len(empatados)} matches excluidos por resultado empatado "
