@@ -1,9 +1,9 @@
 """
 Segundo modelo: XGBoost (Gradient Boosting).
 
-Reutiliza a mesma logica de carregamento/split do baseline, para
-garantir uma comparacao justa (mesmos dados de treino/teste, mesmas
-features). A diferenca esta so no algoritmo de aprendizagem.
+Reutiliza a mesma lógica do baseline para garantir uma comparação 
+justa (mesmos dados de treino/teste, mesmas features). 
+A diferença está só no algoritmo de aprendizagem.
 """
 
 import pandas as pd
@@ -24,17 +24,14 @@ def treinar_e_avaliar_xgboost():
     X_teste = teste[colunas_features]
     y_teste = teste["team_a_venceu"]
 
-    # XGBoost nao precisa de StandardScaler - arvores de decisao sao
-    # invariantes a escala (nao importa se uma feature vai de 0 a 1
-    # e outra de -1000 a 1000, o algoritmo lida bem com isso).
     modelo = XGBClassifier(
-        n_estimators=200,      # numero de arvores
-        max_depth=4,           # profundidade maxima de cada arvore (controla complexidade)
-        learning_rate=0.05,    # o quanto cada arvore nova corrige as anteriores
-        subsample=0.8,         # usa 80% dos dados por arvore (reduz overfitting)
-        colsample_bytree=0.8,  # usa 80% das features por arvore (idem)
+        n_estimators=200,      #numero de arvores
+        max_depth=4,           #profundidade maxima de cada arvore (controla complexidade)
+        learning_rate=0.05,    #o quanto cada arvore nova corrige as anteriores
+        subsample=0.8,         #usa 80% dos dados por arvore (reduz overfitting)
+        colsample_bytree=0.8,  #usa 80% das features por arvore (idem)
         eval_metric="logloss",
-        random_state=42,       # garante resultados reproduziveis
+        random_state=42,       #garante resultados reproduziveis
     )
     modelo.fit(X_treino, y_treino)
 

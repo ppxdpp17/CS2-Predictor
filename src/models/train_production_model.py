@@ -1,11 +1,11 @@
 """
-Treina o MODELO DE PRODUCAO final: usa TODOS os dados historicos
-disponiveis (nao reserva conjunto de teste), porque o objetivo aqui
-ja nao e avaliar o modelo (isso ja fizemos e documentamos), e sim
-maximizar o sinal disponivel para previsoes reais de jogos futuros.
+Treina o modelo final: usa TODOS os dados históricos
+disponíveis (não reserva conjunto de teste), porque o objetivo aqui
+já não é avaliar o modelo, mas sim maximizar o sinal disponível para 
+previsões reais de jogos futuros.
 
 Guarda o modelo treinado em disco (joblib), para o dashboard poder
-carrega-lo instantaneamente em vez de o re-treinar a cada atualizacao.
+carregá-lo instantaneamente em vez de o re-treinar a cada atualização.
 """
 
 import os

@@ -1,8 +1,7 @@
 """
-Procura os melhores hiperparametros para o XGBoost usando validacao
-cruzada TEMPORAL (TimeSeriesSplit), que respeita a ordem cronologica
-em cada divisao treino/validacao - nunca testa no passado usando
-informacao do futuro, mesmo durante o tuning.
+Procura os melhores hiperparâmetros para o XGBoost usando TimeSeriesSplit, 
+que respeita a ordem cronológica em cada divisão treino/validacao - nunca testa 
+no passado usando informação do futuro, mesmo durante o tuning.
 """
 
 import pandas as pd

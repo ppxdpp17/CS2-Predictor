@@ -1,7 +1,7 @@
 """
-Treina o modelo XGBoost de PRODUCAO, usando os melhores hiperparametros
-ja encontrados via GridSearchCV (max_depth=2, n_estimators=50,
-learning_rate=0.05), agora com 100% dos dados historicos disponiveis.
+Treina o modelo XGBoost, usando os melhores hiperparâmetros
+já encontrados via GridSearchCV (max_depth=2, n_estimators=50,
+learning_rate=0.05), agora com 100% dos dados históricos disponíveis.
 """
 
 import os

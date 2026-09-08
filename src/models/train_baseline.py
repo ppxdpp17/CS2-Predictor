@@ -1,12 +1,12 @@
 """
-Primeiro modelo de Machine Learning: Regressao Logistica.
+Primeiro modelo de Machine Learning: Regressão Logistica.
 
-Usa um split TEMPORAL (nao aleatorio) entre treino e teste, para
-respeitar a mesma regra de ouro do resto do projeto: nunca treinar
-com informacao "do futuro" em relacao ao que estamos a testar.
+Usa um split TEMPORAL (não aleatório) entre treino e teste, para
+respeitar a mesma regra do resto do projeto: nunca treinar
+com informação "do futuro" em relação ao que estamos a testar.
 
-Compara sempre com um baseline ingenuo (prever sempre a equipa
-com Elo mais alto), para sabermos se o modelo esta genuinamente
+Compara sempre com um baseline ingénuo (prever sempre a equipa
+com Elo mais alto), para sabermos se o modelo está genuinamente
 a acrescentar valor preditivo.
 """
 
@@ -17,17 +17,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, log_loss, classification_report
 
-# Ancoramos o caminho dos dados a localizacao deste FICHEIRO (nao a
-# pasta de onde o script/notebook e executado). Isto torna o codigo
-# robusto seja chamado do terminal, de um notebook, ou de qualquer
-# outro sitio.
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _CAMINHO_DADOS_DEFAULT = os.path.join(_BASE_DIR, "..", "..", "data", "features_dataset.csv")
 
 
-# Colunas que NAO sao features (identificadores, o proprio target,
-# e elo_a/elo_b em bruto - redundantes com elo_diferenca e causam
-# multicolinearidade, que torna os coeficientes pouco fiaveis)
 COLUNAS_NAO_FEATURES = [
     "match_id", "data", "team_a_nome", "team_b_nome", "team_a_venceu",
     "elo_a", "elo_b",
@@ -45,9 +38,9 @@ def carregar_dados(caminho: str = None):
 
 def split_temporal(df: pd.DataFrame, proporcao_treino: float = 0.8):
     """
-    Divide em treino/teste respeitando a ordem cronologica:
-    os primeiros X% (mais antigos) vao para treino, os ultimos
-    (1-X)% (mais recentes) vao para teste.
+    Divide em treino/teste respeitando a ordem cronológica:
+    os primeiros X% (mais antigos) vão para treino, os últimos
+    (1-X)% (mais recentes) vão para teste.
     """
     ponto_corte = int(len(df) * proporcao_treino)
     treino = df.iloc[:ponto_corte]
@@ -80,9 +73,6 @@ def treinar_e_avaliar():
 
     avaliar_baseline_ingenuo(teste)
 
-    # Um Pipeline garante que o scaler e "aprendido" so com os dados de
-    # treino, e depois aplicado (nao re-aprendido) aos dados de teste -
-    # se nao fizermos isto, seria mais uma forma subtil de data leakage.
     modelo = Pipeline([
         ("scaler", StandardScaler()),
         ("classificador", LogisticRegression(max_iter=1000)),
@@ -90,7 +80,7 @@ def treinar_e_avaliar():
     modelo.fit(X_treino, y_treino)
 
     previsoes = modelo.predict(X_teste)
-    probabilidades = modelo.predict_proba(X_teste)[:, 1]  # prob. de team_a_venceu=1
+    probabilidades = modelo.predict_proba(X_teste)[:, 1]
 
     acc = accuracy_score(y_teste, previsoes)
     ll = log_loss(y_teste, probabilidades)
@@ -101,9 +91,6 @@ def treinar_e_avaliar():
     print(f"\nRelatorio detalhado:")
     print(classification_report(y_teste, previsoes, target_names=["team_b_venceu", "team_a_venceu"]))
 
-    # Quais features o modelo considerou mais importantes?
-    # Como usamos StandardScaler, os coeficientes agora SAO comparaveis
-    # entre si (todas as features estao na mesma escala).
     classificador = modelo.named_steps["classificador"]
     importancias = pd.DataFrame({
         "feature": colunas_features,
