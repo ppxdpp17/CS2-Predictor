@@ -2,7 +2,7 @@ name: Atualizar dataset historico CS2
 
 on:
   schedule:
-    # Corre uma vez por dia, as 03:00 UTC (fora de horas de pico)
+    #Corre uma vez por dia, as 03:00 UTC (fora de horas de pico)
     - cron: "0 3 * * *"
   workflow_dispatch:
 
