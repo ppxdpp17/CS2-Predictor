@@ -1,15 +1,12 @@
 """
-Script standalone, pensado para ser corrido periodicamente por um
-agendador externo (GitHub Actions), sem intervencao humana.
+Script standalone, pensado para ser corrido periodicamente pelo GitHub Actions.
 
-Faz o essencial do que o dashboard faz ao carregar: busca jogos
-futuros, gera previsoes dos 3 modelos, regista-as no log, e verifica
-se jogos anteriores ja terminaram (atualizando a accuracy real).
+Este procura jogos futuros, gera previsões dos 3 modelos, regista-as no log, 
+e verifica se jogos anteriores já terminaram (atualizando a accuracy real).
 
-Termina com codigo de saida 1 se o cookie estiver expirado, para que
-o GitHub Actions marque a execucao como "falhada" - isso fica visivel
-no separador Actions do repositorio, como sinal de que e preciso
-renovar o cf_clearance.
+Termina com codigo de saída 1 se o cookie estiver expirado, para que
+o GitHub Actions marque a execucao como "falhada". Caso isto aconteça, 
+é preciso renovar o cf_clearance.
 """
 
 import os
