@@ -1,10 +1,10 @@
 """
-Obtem o roster ATUAL de cada equipa, diretamente da pagina da equipa
-na HLTV (nao do historico de jogos, que fica desatualizado quando
+Obtém o roster ATUAL de cada equipa, diretamente da página da equipa
+na HLTV (não do histórico de jogos, que fica desatualizado quando
 uma equipa troca de jogadores).
 
-Usa uma cache local em JSON para nao repetir pedidos desnecessarios -
-um roster so e considerado "desatualizado" ao fim de alguns dias.
+Usa uma cache local em JSON para não repetir pedidos desnecessários -
+um roster só é considerado "desatualizado" ao fim de alguns dias.
 """
 
 import os
@@ -63,16 +63,16 @@ MINUTOS_VALIDADE_CACHE_MATCH = 60
 
 def obter_lineup_confirmado_do_jogo(match_id) -> dict:
     """
-    Vai buscar o lineup CONFIRMADO especificamente para este encontro,
-    diretamente na pagina do jogo. Isto inclui stand-ins (substituicoes
-    pontuais), que NAO aparecem na pagina geral da equipa.
+    Vai buscar o lineup confirmado especificamente para este encontro,
+    diretamente à página do jogo. Isto inclui stand-ins que não aparecem na 
+    página geral da equipa.
 
     Devolve {"1": [jogadores...], "2": [jogadores...]} - "1" e "2"
-    correspondem a team1/team2, tal como na pagina de listagem de jogos.
-    Devolve {} se a pagina nao tiver esta secao ainda (jogo muito
+    correspondem a team1/team2, tal como na página da lista de jogos.
+    Devolve {} se a página não tiver esta seção ainda (jogo muito
     distante no tempo, lineup por confirmar).
 
-    Usa cache de 1 hora por match_id, para nao bombardear a HLTV com
+    Usa cache de 1 hora por match_id, para não bombardear a HLTV com
     um pedido por jogo de cada vez que o dashboard atualiza.
     """
     match_id_str = str(int(match_id))
@@ -119,9 +119,8 @@ def obter_lineup_confirmado_do_jogo(match_id) -> dict:
 
 def obter_lineup_atual(team_id) -> list:
     """
-    Devolve o roster atual de uma equipa (lista de nicknames),
-    usando cache local para nao pedir a mesma equipa repetidamente
-    em pouco tempo.
+    Devolve o roster atual de uma equipa, utilizando cache local 
+    para não pedir a mesma equipa repetidamente em pouco tempo.
     """
     team_id_str = str(int(team_id))
     cache = _carregar_cache()
@@ -142,8 +141,6 @@ def obter_lineup_atual(team_id) -> list:
         _guardar_cache(cache)
         return jogadores
 
-    # Se a busca falhar (ex: cookie invalido), usar o valor antigo em
-    # cache se existir, mesmo que desatualizado - e melhor que nada.
     if entrada is not None:
         return entrada["jogadores"]
 
@@ -151,16 +148,12 @@ def obter_lineup_atual(team_id) -> list:
 
 
 def obter_lineups_para_equipas(team_ids) -> dict:
-    """Versao em lote: devolve {team_id: [jogadores]} so para as
-    equipas pedidas (evita ir buscar o roster de todas as +80 equipas
-    do historico quando so precisamos de umas poucas, as que tem
-    jogos agora)."""
+    """Devolve {team_id: [jogadores]} só para as equipas pedidas (evita ir buscar
+    o roster de todas as +80 equipas do histórico quando só precisamos de umas poucas -
+    as que têm jogos agora)."""
     return {tid: obter_lineup_atual(tid) for tid in team_ids}
 
 
-# --- Mantido por compatibilidade: versao antiga baseada no historico ---
-# (ja nao e usada pelo predict_upcoming, mas fica disponivel caso seja
-# util para analises offline)
 def obter_ultimo_lineup_por_equipa() -> dict:
     if not os.path.exists(_CAMINHO_JOGADORES) or not os.path.exists(_CAMINHO_MATCHES):
         return {}

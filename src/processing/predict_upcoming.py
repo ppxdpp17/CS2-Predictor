@@ -1,9 +1,9 @@
 """
-Gera previsoes para os jogos futuros/ao vivo listados em hltv.org/matches,
-usando 3 modelos em simultaneo:
-  Modelo 1 - Baseline Elo (formula de probabilidade Elo padrao, sem treino)
-  Modelo 2 - Regressao Logistica (treinada com 100% do historico)
-  Modelo 3 - XGBoost afinado (treinado com 100% do historico)
+Gera previsões para os jogos futuros/ao vivo listados em hltv.org/matches,
+usando os 3 modelos em simultâneo:
+  Modelo 1 - Baseline Elo (fórmula de probabilidade Elo padrão, sem treino)
+  Modelo 2 - Regressão Logística (treinada com 100% do histórico)
+  Modelo 3 - XGBoost afinado (treinado com 100% do histórico)
 """
 
 import os
@@ -137,10 +137,10 @@ def gerar_previsoes() -> pd.DataFrame:
             "h2h_winrate_a_tinha_dados": h2h_tinha_dados,
         }
 
-        # --- Modelo 1: Baseline Elo (formula padrao, sem treino) ---
+        # --- Modelo 1: Baseline Elo (fórmula padrão, sem treino) ---
         prob1_modelo1 = calcular_probabilidade_elo(elo_a, elo_b)
 
-        # --- Modelo 2: Regressao Logistica ---
+        # --- Modelo 2: Regressão Logística ---
         X_lr = pd.DataFrame([linha_features])[colunas_lr]
         prob1_modelo2 = modelo_lr.predict_proba(X_lr)[0, 1]
 
@@ -148,17 +148,7 @@ def gerar_previsoes() -> pd.DataFrame:
         X_xgb = pd.DataFrame([linha_features])[colunas_xgb]
         prob1_modelo3 = modelo_xgb.predict_proba(X_xgb)[0, 1]
 
-        # --- Previsoes por mapa, UMA POR MODELO ---
-        # IMPORTANTE (documentado tambem em docs/METODOLOGIA.md): nenhum
-        # dos 3 modelos foi treinado com dados de mapa (removido de
-        # proposito, por nao estar disponivel antes do veto). Os valores
-        # abaixo sao uma EXTRAPOLACAO: combinamos a avaliacao geral de
-        # cada modelo sobre o encontro com um heuristico de winrate
-        # historico nesse mapa especifico, usando uma media em "log-odds"
-        # (forma matematicamente correta de combinar duas probabilidades,
-        # ao contrario de uma media simples). Isto NAO e um modelo
-        # treinado ao nivel de mapa - e uma aproximacao para dar mais
-        # contexto quando os mapas ja sao conhecidos.
+        # --- Previsões por mapa, UMA POR MODELO ---
         previsoes_mapa = []
         mapas_revelados = jogo.get("mapas_revelados", [])
         for mapa in mapas_revelados:
@@ -187,9 +177,6 @@ def gerar_previsoes() -> pd.DataFrame:
                 "jogos_historico_team2": jogos_b_mapa,
             })
 
-        # Tenta primeiro o lineup confirmado especificamente para este
-        # jogo (inclui stand-ins); se nao existir ainda, usa o roster
-        # generico da equipa como aproximacao.
         lineup_confirmado = obter_lineup_confirmado_do_jogo(jogo["match_id"])
         jogadores_team1 = lineup_confirmado.get("1") or lineup_fallback.get(id_a, [])
         jogadores_team2 = lineup_confirmado.get("2") or lineup_fallback.get(id_b, [])
