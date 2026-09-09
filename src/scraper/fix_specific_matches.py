@@ -1,7 +1,7 @@
 """
-Corrige manualmente os 3 matches problematicos, sem depender da
-logica de "ja processado" do script principal (que estava, por
-alguma razao, a marca-los incorretamente como completos/saltados).
+Corrige manualmente os 3 matches problemáticos, sem depender da
+lógica de "já processado" do script principal (que estava, por
+alguma razão, a marcá-los incorretamente como completos/saltados).
 """
 
 import pandas as pd
@@ -13,8 +13,6 @@ CAMINHO_SAIDA = "../../data/jogadores_por_match.csv"
 df_matches = pd.read_csv("../../data/matches_clean.csv")
 match_ids_para_corrigir = [632, 1154, 1117]
 
-# Primeiro, remove QUALQUER linha existente destes match_ids no CSV
-# (para nao ficarem duplicados depois de os re-adicionarmos)
 df_existente = pd.read_csv(CAMINHO_SAIDA)
 antes = len(df_existente)
 df_existente = df_existente[~df_existente["match_id"].isin(match_ids_para_corrigir)]

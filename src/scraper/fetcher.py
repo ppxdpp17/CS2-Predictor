@@ -1,15 +1,15 @@
 """
-Modulo responsavel por ir buscar paginas da HLTV de forma robusta.
+Módulo responsável por ir buscar páginas da HLTV de forma robusta.
 
-Estrategia: reutilizar um cookie 'cf_clearance' obtido manualmente
+Estratégia: reutilizar um cookie 'cf_clearance' obtido manualmente
 ao resolver o desafio da Cloudflare num browser normal. As credenciais
-vivem no ficheiro .env (fora do git) por seguranca.
+vivem no ficheiro .env (fora do git) por segurança.
 
-IMPORTANTE: quando o cookie expirar (normalmente algumas horas),
-os pedidos voltam a dar 403 / pagina "Um momento...". Nesse caso:
-1. Abre o URL num browser normal e resolve o desafio
-2. Copia o novo valor de cf_clearance (DevTools > Application > Cookies)
-3. Atualiza o ficheiro .env
+Quando o cookie expirar (normalmente algumas horas), os pedidos voltam a dar 403 / pagina "Um momento...". 
+Neste caso:
+1. Abrir o URL num browser normal e resolver o desafio
+2. Copiar o novo valor de cf_clearance (DevTools > Application > Cookies)
+3. Atualizar o ficheiro .env
 """
 
 import os
@@ -18,10 +18,6 @@ import random
 import requests
 from dotenv import load_dotenv
 
-# Apontamos explicitamente para o .env na pasta deste ficheiro
-# (src/scraper/), em vez de deixar o load_dotenv() adivinhar - isso
-# evita falhas quando o script e corrido a partir de outra pasta
-# (ex: src/processing, ou a raiz do projeto via streamlit).
 _CAMINHO_ENV = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(dotenv_path=_CAMINHO_ENV)
 
@@ -52,7 +48,7 @@ _session.cookies.set("cf_clearance", CF_CLEARANCE, domain=".hltv.org")
 
 def fetch_page(url: str, max_retries: int = 3, base_delay: float = 3.0):
     """
-    Vai buscar o HTML de uma pagina usando a sessao com cookie valido.
+    Vai buscar o HTML de uma página usando a sessão com cookie valido.
 
     Devolve o HTML (string) se conseguir, ou None se falhar
     depois de todas as tentativas.
@@ -68,9 +64,6 @@ def fetch_page(url: str, max_retries: int = 3, base_delay: float = 3.0):
             if "Um momento" in response.text[:1000] or "Just a moment" in response.text[:1000]:
                 print(f"  [tentativa {tentativa}] cookie expirado ou bloqueado (challenge page)")
                 print("  >>> Provavelmente precisas de renovar o cf_clearance no .env <<<")
-                # Nao vale a pena continuar a tentar com o mesmo cookie invalido.
-                # Sinalizamos isto de forma especial para quem chama a funcao
-                # poder decidir parar tudo em vez de desperdicar mais tentativas.
                 raise CookieExpiradoError(url)
             else:
                 return response.text

@@ -1,6 +1,6 @@
 """
-Diagnostico: investigar em detalhe os 3 match_ids problematicos,
-mostrando exatamente o que a pagina devolve e porque a comparacao
+Diagnóstico: investigar em detalhe os 3 match_ids problemáticos,
+mostrando exatamente o que a página devolve e porque a comparação
 de nomes de equipa pode estar a falhar.
 """
 
