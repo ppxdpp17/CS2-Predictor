@@ -15,7 +15,7 @@ The system continuously scrapes match and tournament data from [HLTV.org](https:
 
 ## 🖼️ Dashboard Preview
 
-![CS2 Predictor Dashboard](assets/background.jpg)  
+![CS2 Predictor Dashboard](assets/preview.jpg)  
 *Note: Run `streamlit run app.py` locally to launch the interactive live dashboard, or view the live prediction logs in [`data/previsoes_log.csv`](data/previsoes_log.csv).*
 
 ---
@@ -217,4 +217,4 @@ To enable GitHub Actions automation, configure the `CF_CLEARANCE` repository sec
 
 ## 📜 License
 
-This project is open-source software licensed under the [MIT License](LICENSE).
+This project is open-source software licensed under the [MIT License](LICENSE).
