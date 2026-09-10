@@ -1,6 +1,6 @@
 """
 Extrai os dados de jogador (ID, nome, rating) das duas tabelas de
-estatisticas presentes numa pagina de detalhe de um mapa
+estatísticas presentes numa página de detalhe de um mapa
 (stats/matches/mapstatsid/...).
 """
 
@@ -9,9 +9,9 @@ from bs4 import BeautifulSoup
 
 def parse_jogadores_do_mapa(html: str) -> list[dict]:
     """
-    Devolve uma lista com 2 dicionarios (um por equipa), cada um
+    Devolve uma lista com 2 dicionários (um por equipa), cada um
     contendo o nome da equipa e a lista dos 5 jogadores dela
-    (id, nome, rating) nesse mapa especifico.
+    (id, nome, rating) nesse mapa específico.
     """
     soup = BeautifulSoup(html, "html.parser")
     tabelas = soup.find_all("table", class_="totalstats")
@@ -19,7 +19,6 @@ def parse_jogadores_do_mapa(html: str) -> list[dict]:
     resultado = []
 
     for tabela in tabelas:
-        # Nome da equipa esta no cabecalho, no atributo alt da imagem do logo
         th_equipa = tabela.find("th", class_="st-teamname")
         img_equipa = th_equipa.find("img") if th_equipa else None
         nome_equipa = img_equipa.get("alt") if img_equipa else None
@@ -30,7 +29,6 @@ def parse_jogadores_do_mapa(html: str) -> list[dict]:
         for linha in linhas_jogador:
             link_jogador = linha.find("td", class_="st-player").find("a")
             nome_jogador = link_jogador.get_text(strip=True)
-            # href tem o formato /stats/players/19045/latto
             player_id = link_jogador["href"].split("/")[3]
 
             rating_td = linha.find("td", class_="st-rating")

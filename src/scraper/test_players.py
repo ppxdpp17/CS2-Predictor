@@ -7,8 +7,6 @@ usando um slug generico/inventado (nao precisamos do slug real), e
 from fetcher import fetch_page
 from parse_players import parse_jogadores_do_mapa
 
-# Propositadamente um slug ERRADO, para testar se o HLTV ignora
-# esse texto e usa so o numero do mapstat_id.
 url_teste = "https://www.hltv.org/stats/matches/mapstatsid/236101/qualquer-coisa-aqui"
 
 html = fetch_page(url_teste)

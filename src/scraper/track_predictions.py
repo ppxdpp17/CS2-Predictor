@@ -1,8 +1,8 @@
 """
-Regista as previsoes feitas ao longo do tempo pelos 3 modelos, num
-ficheiro persistente (previsoes_log.csv), e verifica periodicamente
-se os jogos ja terminaram, comparando cada previsao com o resultado
-real - permitindo calcular a accuracy real de CADA modelo em producao.
+Regista as previsões feitas ao longo do tempo pelos 3 modelos, num
+ficheiro persistente (previsoes_log.csv), e verifica periódicamente
+se os jogos já terminaram, comparando cada previsão com o resultado
+real (permitindo calcular a accuracy real de cada modelo).
 """
 
 import os
@@ -104,10 +104,6 @@ def _buscar_resultados_recentes(max_paginas: int = 2) -> dict:
 def verificar_resultados(max_paginas: int = 2) -> int:
     log = carregar_log()
 
-    # Forcar estas colunas a aceitar texto (object), porque se o CSV
-    # so tinha valores vazios ate agora, o pandas assume erradamente
-    # que sao colunas numericas (float64), e recusa-se a aceitar
-    # strings (nomes de equipas) mais tarde.
     log["resultado_real"] = log["resultado_real"].astype(object)
     for _m in NOMES_MODELOS:
         log[f"acertou_{_m}"] = log[f"acertou_{_m}"].astype(object)

@@ -1,6 +1,6 @@
 """
-Teste: usar um browser real (via Playwright) com tecnicas de stealth
-para tentar aceder a pagina de stats/matches, que bloqueou o cloudscraper
+Teste: usar um browser real (via Playwright) com técnicas de stealth
+para tentar aceder à página de stats/matches, que bloqueou o cloudscraper
 e o Playwright simples.
 """
 

@@ -1,7 +1,7 @@
 """
-Teste: confirmar se as paginas /results e /matches ainda sao acessiveis
-com cloudscraper simples (sem cookie manual), o que e essencial para
-conseguirmos automatizar o dashboard sem intervencao humana constante.
+Teste: confirmar se as páginas /results e /matches ainda são acessíveis
+com cloudscraper simples (sem cookie manual), o que é essencial para
+conseguir automatizar o dashboard sem intervenção humana constante.
 """
 
 import cloudscraper

@@ -1,5 +1,5 @@
 """
-Percorre varias paginas de resultados da HLTV, extrai os dados de
+Percorre várias páginas de resultados da HLTV, extrai os dados de
 cada jogo, e guarda tudo num ficheiro CSV.
 """
 
@@ -10,8 +10,8 @@ from fetcher import fetch_page, gentle_pause
 
 
 def parse_pagina(html: str) -> list[dict]:
-    """Recebe o HTML de uma pagina de resultados e devolve uma lista
-    de dicionarios, um por partida encontrada."""
+    """Recebe o HTML de uma página de resultados e devolve uma lista
+    de dicionários, um por partida encontrada."""
     soup = BeautifulSoup(html, "html.parser")
     result_blocks = soup.find_all("div", class_="result")
 
@@ -58,10 +58,10 @@ def parse_pagina(html: str) -> list[dict]:
 
 def recolher_varias_paginas(num_paginas: int, offset_inicial: int = 0) -> pd.DataFrame:
     """
-    Percorre 'num_paginas' paginas de resultados, comecando em
+    Percorre 'num_paginas' páginas de resultados, começando em
     'offset_inicial', e devolve tudo junto num DataFrame do pandas.
 
-    A HLTV mostra 100 resultados por pagina, por isso o offset
+    A HLTV mostra 100 resultados por página, por isso o offset
     avanca de 100 em 100.
     """
     todas_as_partidas = []
@@ -88,14 +88,11 @@ def recolher_varias_paginas(num_paginas: int, offset_inicial: int = 0) -> pd.Dat
 
 
 if __name__ == "__main__":
-    # Por agora, um teste pequeno: 3 paginas (~300 jogos).
-    # Quando estivermos confiantes que funciona bem, aumentamos.
     df = recolher_varias_paginas(num_paginas=3)
 
     print(f"\nTotal de partidas recolhidas: {len(df)}")
     print(df.head())
 
-    # Guardar em CSV dentro da pasta data/
     caminho_saida = "../../data/resultados_raw.csv"
     df.to_csv(caminho_saida, index=False)
     print(f"\nGuardado em: {caminho_saida}")
