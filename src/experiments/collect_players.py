@@ -14,7 +14,7 @@ import os
 import pandas as pd
 
 from fetcher import fetch_page, gentle_pause, CookieExpiradoError
-from parse_players import parse_jogadores_do_mapa
+from experiments.parse_players import parse_jogadores_do_mapa
 
 
 def recolher_dados_jogadores(
