@@ -1,9 +1,9 @@
 """
-Dashboard do CS2 Predictor - mostra as previsoes de 3 modelos em
-simultaneo (Baseline Elo, Regressao Logistica, XGBoost), com tracking
+Dashboard do CS2 Predictor - mostra as previsões de 3 modelos em
+simultâneo (Baseline Elo, Regressão Logística, XGBoost), com tracking
 de accuracy real de cada um ao longo do tempo.
 
-Corre com: streamlit run app.py
+Correr com: streamlit run app.py
 """
 
 import os
@@ -38,7 +38,7 @@ if os.path.exists(_CAMINHO_BACKGROUND):
 
 MODELOS_INFO = {
     "modelo1": {"nome": "Baseline Elo", "cor": "#8a8a8a"},
-    "modelo2": {"nome": "Regressao Logistica", "cor": "#d13c3c"},
+    "modelo2": {"nome": "Regressão Logística", "cor": "#d13c3c"},
     "modelo3": {"nome": "XGBoost", "cor": "#2761d1"},
 }
 
@@ -81,9 +81,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Bloco de CSS separado, isolado, so para a imagem de fundo -
-# evita misturar f-strings com o bloco de CSS grande (chavetas do CSS
-# conflituam com a sintaxe de f-string do Python).
 if _BACKGROUND_B64:
     _regra_background = (
         'background: linear-gradient(rgba(14,14,22,0.88), rgba(14,14,22,0.88)), '
@@ -101,15 +98,15 @@ with st.sidebar:
     if st.button("🔄 Atualizar agora", use_container_width=True):
         st.cache_data.clear()
 
-    auto_refresh = st.checkbox("Atualizacao automatica (a cada 5 min)", value=True)
+    auto_refresh = st.checkbox("Atualizacao automática (a cada 5 min)", value=True)
     if auto_refresh:
         from streamlit_autorefresh import st_autorefresh
         st_autorefresh(interval=5 * 60 * 1000, key="auto_refresh_timer")
 
     st.markdown("---")
     st.caption(
-        "⚠️ Depende de um cookie de sessao (cf_clearance) que expira "
-        "periodicamente. Renova-o no .env se as previsoes pararem."
+        "⚠️ Depende de um cookie de sessão (cf_clearance) que expira "
+        "periodicamente. Renova-o no .env se as previsões pararem."
     )
 
 
@@ -122,7 +119,7 @@ try:
     df = carregar_previsoes()
 except CookieExpiradoError:
     st.error(
-        "🍪 Cookie de sessao expirado. Renova o `cf_clearance` em "
+        "🍪 Cookie de sessão expirado. Renova o `cf_clearance` em "
         "`src/scraper/.env` e clica em 'Atualizar agora'."
     )
     st.stop()
@@ -135,8 +132,8 @@ if len(df) > 0:
 track_predictions.verificar_resultados()
 estatisticas = track_predictions.obter_estatisticas()
 
-st.caption(f"Ultima atualizacao: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')} "
-           f"| {estatisticas['total_resolvidos']} de {estatisticas['total_previsoes']} previsoes confirmadas")
+st.caption(f"Última atualização: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')} "
+           f"| {estatisticas['total_resolvidos']} de {estatisticas['total_previsoes']} previsões confirmadas")
 
 cols = st.columns(3)
 for i, (chave, info) in enumerate(MODELOS_INFO.items()):
@@ -164,7 +161,7 @@ def _placar_previsto(prob1, formato):
         placar = "1-0"
     elif max_mapas == 3:
         placar = "2-0" if prob_favorito >= 0.62 else "2-1"
-    else:  # bo5
+    else:
         if prob_favorito >= 0.70:
             placar = "3-0"
         elif prob_favorito >= 0.55:
@@ -175,7 +172,6 @@ def _placar_previsto(prob1, formato):
     if vencedor_e_team1:
         return placar
     else:
-        # inverter o placar para refletir que quem ganha e a team2
         a, b = placar.split("-")
         return f"{b}-{a}"
 
@@ -214,7 +210,7 @@ def mostrar_cartao_jogo(jogo):
     previsoes_mapa = jogo.get("previsoes_mapa", [])
     if isinstance(previsoes_mapa, list) and len(previsoes_mapa) > 0:
         partes_html.append('<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #3a3760;">')
-        partes_html.append('<div style="font-size:12px; color:#9d9ac2; margin-bottom:8px;">Previsoes por mapa (extrapolacao: avaliacao geral de cada modelo ajustada por winrate historico nesse mapa - nao e um modelo treinado ao nivel de mapa)</div>')
+        partes_html.append('<div style="font-size:12px; color:#9d9ac2; margin-bottom:8px;">Previsões por mapa (extrapolação: avaliação geral de cada modelo ajustada por winrate histórico nesse mapa - não é um modelo treinado ao nível de mapa)</div>')
         for previsao in previsoes_mapa:
             partes_html.append(f'<div style="font-weight:700; font-size:14px; margin-top:6px;">{previsao["mapa"]}</div>')
             for chave, info in MODELOS_INFO.items():
@@ -280,6 +276,6 @@ with aba_passados:
         st.markdown(html_passado, unsafe_allow_html=True)
 
 st.caption(
-    "3 modelos comparados em producao: Baseline Elo, Regressao Logistica "
-    "e XGBoost, todos treinados com dados historicos de encontros tier 1 (2023-2026)."
+    "3 modelos comparados: Baseline Elo, Regressão Logística "
+    "e XGBoost, todos treinados com dados históricos de encontros tier 1 (2023-2026)."
 )
