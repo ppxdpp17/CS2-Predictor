@@ -61,10 +61,13 @@ Most open-source esports prediction projects suffer from two critical flaws: **s
                           │  Streamlit Dashboard  │ ◄── Auto-Refresh & Roster Tooltips
                           └───────────┬───────────┘
                                       │
-                                      ▼
-                          ┌───────────────────────┐
-                          │ GitHub Actions MLOps  │ ◄── Hourly Real-World Accuracy Audit
-                          └───────────────────────┘
+              ┌───────────────────────┴───────────────────────┐
+              ▼                                                 ▼
+ ┌─────────────────────────┐                    ┌─────────────────────────────┐
+ │  Hourly GitHub Action   │                    │   Daily GitHub Action       │
+ │  Predictions + Accuracy │                    │  Dataset Growth + Retrain   │
+ │        Tracking         │                    │  (LogReg + XGBoost)         │
+ └─────────────────────────┘                    └─────────────────────────────┘
 ```
 
 ---
@@ -94,42 +97,52 @@ Models were evaluated on a temporal holdout set (last 20% of chronological match
 .
 ├── .github/
 │   └── workflows/
-│       └── atualizar_previsoes.yml  # GitHub Actions workflow for hourly prediction tracking
+│       ├── atualizar_previsoes.yml       # Hourly: prediction tracking & accuracy audit
+│       └── atualizar_dataset.yml         # Daily: dataset growth & model retraining
 ├── assets/
-│   └── background.jpg               # Dashboard visual asset
+│   ├── background.jpg                    # Dashboard background image
+│   └── preview.jpg                       # Dashboard screenshot (README preview)
 ├── data/
-│   ├── features_dataset.csv         # Processed feature dataset with strict chronological ordering
-│   ├── matches_clean.csv            # Cleaned match-level dataset (3,000+ CS2 games)
-│   ├── mapas_raw.csv                # Raw map-level stats scraped from HLTV
-│   ├── previsoes_log.csv            # Historic prediction tracking log & outcome audit
-│   ├── modelo_producao.pkl          # Saved Logistic Regression production model artifact
-│   └── modelo_producao_xgb.pkl      # Saved XGBoost production model artifact
+│   ├── features_dataset.csv              # Processed feature dataset (chronological)
+│   ├── matches_clean.csv                 # Cleaned match-level dataset
+│   ├── mapas_raw.csv                     # Raw map-level stats (grows daily)
+│   ├── previsoes_log.csv                 # Prediction tracking log & outcome audit
+│   ├── modelo_producao.pkl               # Logistic Regression production model
+│   └── modelo_producao_xgb.pkl           # XGBoost production model
 ├── docs/
-│   ├── METODOLOGIA.md               # Detailed methodology, experiment notes, & decisions
-│   └── RENOVAR_COOKIE.md            # Guide for updating Cloudflare session tokens
+│   ├── METODOLOGIA.md                    # Full methodology, experiments & decisions (PT)
+│   └── RENOVAR_COOKIE.md                 # Cloudflare cookie renewal guide (PT)
 ├── notebooks/
-│   └── 01_eda.ipynb                 # Exploratory data analysis, calibration, & model evaluation
+│   └── 01_eda.ipynb                      # Exploratory data analysis & calibration
 ├── scripts/
-│   └── atualizar_previsoes.py       # Headless script for continuous prediction logging & evaluation
+│   ├── atualizar_previsoes.py            # Standalone script run hourly by GH Actions
+│   └── atualizar_dataset_historico.py    # Standalone script run daily by GH Actions
 ├── src/
 │   ├── models/
-│   │   ├── train_baseline.py        # Baseline Elo model evaluator
-│   │   ├── train_production_model.py# Logistic Regression training & serialization
-│   │   ├── train_xgboost.py         # XGBoost model training script
-│   │   └── tune_xgboost.py          # Time-series cross-validation & hyperparameter tuning
+│   │   ├── train_baseline.py             # Baseline + Logistic Regression evaluator
+│   │   ├── tune_xgboost.py               # Hyperparameter tuning (TimeSeriesSplit)
+│   │   ├── train_production_model.py     # Logistic Regression production training
+│   │   └── train_production_xgboost.py   # XGBoost production training
 │   ├── processing/
-│   │   ├── build_features.py        # Dynamic feature engineering pipeline (Elo, form, H2H)
-│   │   ├── build_matches.py         # Map-to-match reconstruction & data cleaning
-│   │   ├── predict_upcoming.py      # Real-time feature calculation & upcoming match prediction
-│   │   └── team_rosters.py          # Active team roster cache & lookup
-│   └── scraper/
-│       ├── fetcher.py               # Cloudflare-bypassing HTTP request wrapper
-│       ├── get_upcoming_matches.py  # HLTV upcoming/live matches scraper
-│       ├── parse_results.py         # HLTV match result parser
-│       └── track_predictions.py     # Production accuracy logger & result validator
-├── app.py                           # Interactive Streamlit dashboard
-├── requirements.txt                 # Python dependencies
-└── README.md                        # Project documentation
+│   │   ├── build_features.py             # Feature engineering (Elo, form, H2H)
+│   │   ├── build_matches.py              # Map-to-match reconstruction
+│   │   ├── predict_upcoming.py           # Real-time prediction pipeline (3 models)
+│   │   └── team_rosters.py               # Live roster lookup (incl. stand-in detection)
+│   ├── scraper/
+│   │   ├── fetcher.py                    # Cloudflare-authenticated request wrapper
+│   │   ├── get_upcoming_matches.py       # Upcoming/live matches scraper
+│   │   ├── parse_map_stats.py            # Historical map-stats scraper/parser
+│   │   └── track_predictions.py          # Production accuracy logger
+│   └── experiments/                      # Documented experiments, not in production
+│       ├── README.md
+│       ├── test_roster_stability.py
+│       ├── train_with_players.py
+│       ├── collect_players.py
+│       └── parse_players.py
+├── app.py                                # Interactive Streamlit dashboard
+├── requirements.txt
+├── LICENSE
+└── README.md
 ```
 
 ---
@@ -194,16 +207,23 @@ streamlit run app.py
 
 ## 🔄 Automated Continuous Tracking (MLOps)
 
-This project features an automated MLOps workflow powered by GitHub Actions ([`.github/workflows/atualizar_previsoes.yml`](.github/workflows/atualizar_previsoes.yml)):
+This project runs two independent GitHub Actions workflows, requiring no manual intervention beyond periodic Cloudflare cookie renewal:
 
-- **Frequency**: Runs hourly (`0 * * * *`).
-- **Functionality**:
-  1. Scrapes newly announced upcoming matches and records predictions.
-  2. Checks outcomes of previously predicted matches.
-  3. Updates production accuracy statistics in [`data/previsoes_log.csv`](data/previsoes_log.csv).
-  4. Automatically commits updated prediction logs back to the repository.
+### Hourly: Prediction Tracking (`.github/workflows/atualizar_previsoes.yml`)
+- Scrapes newly announced upcoming/live matches and records predictions from all 3 models
+- Checks outcomes of previously predicted matches
+- Updates real-world production accuracy in [`data/previsoes_log.csv`](data/previsoes_log.csv)
+- Commits updated logs back to the repository
 
-To enable GitHub Actions automation, configure the `CF_CLEARANCE` repository secret under **Settings -> Secrets and variables -> Actions**.
+### Daily: Dataset Growth & Retraining (`.github/workflows/atualizar_dataset.yml`)
+- Checks HLTV for newly finished Tier-1 matches since the last collection
+- Appends new data to the historical dataset and rebuilds engineered features
+- Retrains both production models (Logistic Regression + XGBoost) on the updated dataset
+- Skips retraining entirely if no new matches are found (avoids unnecessary commits)
+
+To enable both workflows, configure these repository secrets under **Settings → Secrets and variables → Actions**:
+- `CF_CLEARANCE`
+- `USER_AGENT`
 
 ---
 
