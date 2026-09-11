@@ -17,11 +17,8 @@ sys.path.append(os.path.join(_ROOT, "src", "processing"))
 sys.path.append(os.path.join(_ROOT, "src", "scraper"))
 sys.path.append(os.path.join(_ROOT, "src", "models"))
 
-# pyrefly: ignore [missing-import]
 from predict_upcoming import gerar_previsoes
-# pyrefly: ignore [missing-import]
 from fetcher import CookieExpiradoError
-# pyrefly: ignore [missing-import]
 import track_predictions
 
 

@@ -1,35 +1,30 @@
-# Como renovar o cookie da HLTV
+# How to Renew the HLTV Session Cookie
 
-O scraping em tempo real (jogos futuros/ao vivo) depende de um cookie
-`cf_clearance`, que prova à Cloudflare que o pedido vem de uma sessão
-já validada por um humano. Este cookie expira periodicamente.
+Live scraping (upcoming/live games) relies on a `cf_clearance` cookie, which proves to Cloudflare that the HTTP request originates from a human-validated browser session. This cookie expires periodically.
 
-## Sintoma de que precisa de renovação
+## Symptoms of Expiry
 
-- O dashboard mostra um erro "Cookie de sessão expirado"
-- O GitHub Action (separador "Actions" do repositório) aparece com ❌
+- The Streamlit dashboard displays a "Session cookie expired" warning.
+- GitHub Actions workflows fail (marked with ❌ in the repository's **Actions** tab).
 
-## Passos para renovar
+## Steps to Renew
 
-1. Abrir `https://www.hltv.org/matches` num browser normal (Chrome/Edge/Firefox)
-2. Resolver a verificação de segurança até a página carregar por completo
-3. Abrir as DevTools (F12) → separador **Application** (Chrome/Edge) ou
-   **Storage** (Firefox)
-4. No menu lateral: **Cookies** → `https://www.hltv.org`
-5. Copiar o valor da linha **`cf_clearance`**
+1. Open `https://www.hltv.org/matches` in a standard desktop browser (Chrome/Edge/Firefox).
+2. Complete any Cloudflare security verification until the page loads fully.
+3. Open DevTools (**F12**) → Navigate to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox).
+4. Under **Cookies** in the left sidebar, select `https://www.hltv.org`.
+5. Copy the value of the **`cf_clearance`** key.
 
-## Onde colocar o novo valor
+## Updating the Cookie Value
 
-### Se estiver a correr localmente
-Atualizar `src/scraper/.env`:
-```
-CF_CLEARANCE=<o-novo-valor-aqui>
-USER_AGENT=<o-user-agent-atual-aqui>
+### 1. Local Environment
+Update `src/scraper/.env`:
+```env
+CF_CLEARANCE=<your-new-cookie-value-here>
+USER_AGENT=<your-current-browser-user-agent-here>
 ```
 
-### Para o GitHub Action continuar a funcionar
-1. Ir ao repositório no GitHub → **Settings** → **Secrets and variables** → **Actions**
-2. Atualizar o secret `CF_CLEARANCE`
-3. (Opcional) Correr o workflow manualmente: separador **Actions** →
-   "Atualizar previsoes CS2" → **Run workflow**, para confirmar que
-   voltou a funcionar sem esperar pela próxima hora agendada
+### 2. GitHub Actions Automation
+1. Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**.
+2. Update the `CF_CLEARANCE` secret (and `USER_AGENT` if changed).
+3. *(Optional)* Manually trigger a run under **Actions** → **Run workflow** to verify immediate success without waiting for the next scheduled run.
